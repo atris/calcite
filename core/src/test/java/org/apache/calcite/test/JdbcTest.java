@@ -6607,6 +6607,34 @@ public class JdbcTest {
 
   }
 
+  // Remove test
+  @Test public void testJoinSide() {
+    CalciteAssert.that()
+            .with(CalciteAssert.Config.SCOTT)
+            .query("select e.deptno, d.DEPTNO from \"scott\".EMP\n"
+                    + "e join \"scott\".DEPT d on (e.deptno=d.DEPTNO)")
+            .returns("abcd");
+  }
+
+  // Remove test
+  @Test public void testJoinSideLeft() {
+    CalciteAssert.that()
+            .with(CalciteAssert.Config.SCOTT)
+            .query("select e.deptno, d.DEPTNO from \"scott\".EMP\n"
+                    + "e left join \"scott\".DEPT d on (e.deptno = d.DEPTNO)")
+            .returns("abcd");
+  }
+
+  // Remove test
+  @Test public void testJoinSelf() {
+    CalciteAssert.that()
+            .with(CalciteAssert.Config.SCOTT)
+            .query("select * from \"scott\".EMP\n"
+                    + "e join (select * from \"scott\".EMP f where f.DEPTNO = 10) q on e.empno = q.empno")
+            .explainMatches("  INCLUDING ALL ATTRIBUTES ",
+                    CalciteAssert.checkResultContains("just print explain"));
+  }
+
   /**
    * Test case for
    * <a href="https://issues.apache.org/jira/browse/CALCITE-2054">[CALCITE-2054]

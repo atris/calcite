@@ -198,6 +198,32 @@ public class EnumerableJoin extends EquiJoin implements EnumerableRel {
     final PhysType keyPhysType =
         leftResult.physType.project(
             leftKeys, JavaRowFormat.LIST);
+
+    if (joinType == JoinRelType.INNER) {
+      return implementor.result(
+              physType,
+              builder.append(
+                      Expressions.call(
+                              rightExpression,
+                              BuiltInMethod.JOIN.method,
+                              Expressions.list(
+                                      leftExpression,
+                                      rightResult.physType.generateAccessor(rightKeys),
+                                      leftResult.physType.generateAccessor(leftKeys),
+                                      EnumUtils.joinSelector(joinType,
+                                              physType,
+                                              ImmutableList.of(
+                                                      rightResult.physType, leftResult.physType)))
+                                      .append(
+                                              Util.first(keyPhysType.comparer(),
+                                                      Expressions.constant(null)))
+                                      .append(
+                                              Expressions.constant(joinType.generatesNullsOnLeft()))
+                                      .append(
+                                              Expressions.constant(
+                                                      joinType.generatesNullsOnRight())))).toBlock());
+    }
+
     return implementor.result(
         physType,
         builder.append(
